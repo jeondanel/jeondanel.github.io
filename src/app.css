@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import 'devicon/devicon.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #050507;
+  --page-bg:
+    radial-gradient(circle at top right, rgba(255, 48, 48, 0.12), transparent 24%),
+    radial-gradient(circle at left 28%, rgba(255, 0, 0, 0.08), transparent 28%),
+    linear-gradient(180deg, #030304 0%, #09090b 52%, #030304 100%);
+  --topbar-bg: rgba(5, 5, 7, 0.8);
+  --surface: linear-gradient(180deg, rgba(16, 8, 8, 0.9), rgba(8, 6, 6, 0.94));
+  --chip-bg: rgba(255, 255, 255, 0.02);
+  --chip-hover-bg: rgba(255, 48, 48, 0.12);
+  --border: rgba(255, 48, 48, 0.18);
+  --border-weak: rgba(255, 48, 48, 0.12);
+  --text: #e0d7d7;
+  --text-strong: #fff7f7;
+  --muted: #b6a8a8;
+  --accent: #ff2f2f;
+  --accent-2: #b30000;
+  --muted-dot: rgba(255, 120, 120, 0.7);
+  --shadow: 0 26px 60px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme='light'] {
+  --bg: #fbf4f4;
+  --page-bg:
+    radial-gradient(circle at top right, rgba(255, 48, 48, 0.12), transparent 26%),
+    radial-gradient(circle at left 28%, rgba(255, 110, 110, 0.12), transparent 28%),
+    linear-gradient(180deg, #fff7f7 0%, #f8eded 52%, #fffafb 100%);
+  --topbar-bg: rgba(255, 247, 247, 0.82);
+  --surface: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 236, 236, 0.94));
+  --chip-bg: rgba(35, 8, 8, 0.04);
+  --chip-hover-bg: rgba(255, 48, 48, 0.1);
+  --border: rgba(144, 34, 34, 0.14);
+  --border-weak: rgba(144, 34, 34, 0.08);
+  --text: #332222;
+  --text-strong: #180f0f;
+  --muted: #6e5555;
+  --accent: #c30000;
+  --accent-2: #7b0000;
+  --muted-dot: rgba(110, 85, 85, 0.7);
+  --shadow: 0 22px 44px rgba(62, 20, 20, 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--page-bg);
+  overflow-x: clip;
+  color: var(--text);
+  font-family: 'Poppins', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(126, 231, 255, 0.28);
+  color: var(--text-strong);
+}
+
+.background {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.background-one {
+  top: -10rem;
+  right: -8rem;
+  width: 26rem;
+  height: 26rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 48, 48, 0.22), transparent 68%);
+  filter: blur(20px);
+}
+
+.background-two {
+  bottom: 14rem;
+  left: -8rem;
+  width: 24rem;
+  height: 24rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(180, 0, 0, 0.2), transparent 70%);
+  filter: blur(20px);
+}
+
+.binary-rain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  background-image:
+    linear-gradient(rgba(255, 48, 48, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 48, 48, 0.02) 1px, transparent 1px),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent 48px,
+      rgba(255, 48, 48, 0.12) 49px,
+      rgba(255, 48, 48, 0.12) 50px,
+      transparent 51px,
+      transparent 100px
+    );
+  background-size: 100% 100%, 100% 100%, 100% 100%;
+  mix-blend-mode: screen;
+  animation: binary-flow 18s linear infinite;
+}
+
+.binary-rain::before,
+.binary-rain::after {
+  content: '01010100101101010010110100101010 11100011100101010101011100011001 0100110101011100 1101010010101010';
+  position: absolute;
+  inset: -20% 0 auto;
+  color: rgba(255, 48, 48, 0.35);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: clamp(0.68rem, 1vw, 0.9rem);
+  letter-spacing: 0.22em;
+  white-space: pre-wrap;
+  line-height: 2.2;
+  text-shadow: 0 0 14px rgba(255, 48, 48, 0.25);
+  animation: binary-drop 16s linear infinite;
+}
+
+.binary-rain::after {
+  inset: -25% 0 auto;
+  color: rgba(255, 255, 255, 0.08);
+  animation-duration: 22s;
+  animation-direction: reverse;
+}
+
+@keyframes binary-flow {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(120px);
+  }
+}
+
+@keyframes binary-drop {
+  from {
+    transform: translateY(-10%);
+  }
+  to {
+    transform: translateY(120%);
+  }
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 0.375rem));
+  }
+}
+
+.tech-carousel-track {
+  display: flex;
+  width: max-content;
+  gap: 0.75rem;
+  animation: marquee-scroll 18s linear infinite;
+  will-change: transform;
+}
+
+.material-symbols-outlined {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  user-select: none;
+}
