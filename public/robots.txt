@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemap Location
-Sitemap: https://jeondanel.github.io/Portfolio/sitemap.xml
+Sitemap: https://jeondanel.github.io/sitemap.xml

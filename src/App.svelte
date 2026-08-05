@@ -361,17 +361,17 @@
   />
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://jeondanel.github.io/Portfolio/" />
+  <meta property="og:url" content="https://jeondanel.github.io/" />
   <meta property="og:title" content="Danel Tungpalan | Aspiring Quality Analyst & Developer" />
   <meta property="og:description" content="Portfolio of Danel M. Tungpalan, an aspiring Quality Analyst and Software Developer from Quezon City, Philippines." />
-  <meta property="og:image" content="https://jeondanel.github.io/Portfolio/favicon.svg" />
+  <meta property="og:image" content="https://jeondanel.github.io/favicon.svg" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="https://jeondanel.github.io/Portfolio/" />
+  <meta property="twitter:url" content="https://jeondanel.github.io/" />
   <meta property="twitter:title" content="Danel Tungpalan | Aspiring Quality Analyst & Developer" />
   <meta property="twitter:description" content="Portfolio of Danel M. Tungpalan, an aspiring Quality Analyst and Software Developer from Quezon City, Philippines." />
-  <meta property="twitter:image" content="https://jeondanel.github.io/Portfolio/favicon.svg" />
+  <meta property="twitter:image" content="https://jeondanel.github.io/favicon.svg" />
 </svelte:head>
 
 {#if isLoading}
@@ -597,8 +597,8 @@
 
   <footer class="relative z-10 w-full mx-auto pb-12 px-[clamp(1rem,4vw,3rem)] max-sm:px-3 border-t border-border-weak pt-8">
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-muted text-sm font-mono max-w-[1200px] mx-auto">
-      <p>&copy; {new Date().getFullYear()} dnla.mac. All rights reserved.</p>
-      <p>Built with Svelte, Tailwind CSS & TypeScript</p>
+      <p>&copy; {new Date().getFullYear()} Danel Tungpalan. All rights reserved.</p>
+      <p>Contact Me!</p>
     </div>
   </footer>
 </div>
