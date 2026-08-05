@@ -354,10 +354,24 @@
 </script>
 
 <svelte:head>
-  <title>Danel Tungpalan</title>
+  <title>Danel Tungpalan | Aspiring Quality Analyst & Developer</title>
   <meta
     name="description"
+    content="Portfolio of Danel M. Tungpalan, an aspiring Quality Analyst and Software Developer from Quezon City, Philippines. Check out my software, hardware projects, and skills."
   />
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://jeondanel.github.io/Portfolio/" />
+  <meta property="og:title" content="Danel Tungpalan | Aspiring Quality Analyst & Developer" />
+  <meta property="og:description" content="Portfolio of Danel M. Tungpalan, an aspiring Quality Analyst and Software Developer from Quezon City, Philippines." />
+  <meta property="og:image" content="https://jeondanel.github.io/Portfolio/favicon.svg" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://jeondanel.github.io/Portfolio/" />
+  <meta property="twitter:title" content="Danel Tungpalan | Aspiring Quality Analyst & Developer" />
+  <meta property="twitter:description" content="Portfolio of Danel M. Tungpalan, an aspiring Quality Analyst and Software Developer from Quezon City, Philippines." />
+  <meta property="twitter:image" content="https://jeondanel.github.io/Portfolio/favicon.svg" />
 </svelte:head>
 
 {#if isLoading}
@@ -429,7 +443,7 @@
     <section id="home" class="min-h-[calc(100svh-7rem)] grid content-start gap-[0.85rem] pt-8 md:content-center py-[clamp(2rem,5vw,4rem)] px-0 scroll-mt-[6.5rem] max-[960px]:min-h-0">
       <div class="hero-copy">
         <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold text-base max-sm:text-[1.05rem]" use:binaryDecrypt={{ active: isLoading, delay: 150 }}>Hi, I'm Danel</p>
-        <h1 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[11ch] text-[clamp(3.8rem,9vw,7rem)]" use:binaryDecrypt={{ active: isLoading, delay: 350 }}>Aspiring Quality Analsyt.</h1>
+        <h1 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[11ch] text-[clamp(3.8rem,9vw,7rem)]" use:binaryDecrypt={{ active: isLoading, delay: 350 }}>Aspiring Quality Analyst.</h1>
         <p class="max-w-[60ch] mt-0 mx-0 mb-12 text-[1.05rem] text-text" use:binaryDecrypt={{ active: isLoading, delay: 550 }}>
           I build software and microcontroller-based systems, and I'm working toward a career in
           Quality Assurance, where I can contribute to building reliable, high-quality products
@@ -481,14 +495,14 @@
       <div class="hero-carousel">
         <div class="grid gap-[0.55rem] mt-0">
           <div class="overflow-hidden pb-[0.2rem] [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]" aria-label="Tech stack carousel">
-            <div class="tech-carousel-track">
+            <ul class="tech-carousel-track list-none p-0 m-0">
               {#each marqueeTechStacks as stack}
-                <article class="flex items-center gap-[0.9rem] p-4 rounded-2xl border border-border bg-surface shadow-custom min-w-[10.5rem]">
+                <li class="flex items-center gap-[0.9rem] p-4 rounded-2xl border border-border bg-surface shadow-custom min-w-[10.5rem]">
                   <i class={`inline-flex items-center justify-center w-[2.55rem] h-[2.55rem] flex-none text-[2.05rem] leading-none ${stack.icon}`} aria-hidden="true"></i>
                   <p class="m-0 text-text-strong text-base leading-[1.35] font-semibold" use:binaryDecrypt={{ active: isLoading, delay: 750 }}>{stack.name}</p>
-                </article>
+                </li>
               {/each}
-            </div>
+            </ul>
           </div>
         </div>
       </div>
@@ -580,4 +594,11 @@
       </div>
     </section>
   </main>
+
+  <footer class="relative z-10 w-full mx-auto pb-12 px-[clamp(1rem,4vw,3rem)] max-sm:px-3 border-t border-border-weak pt-8">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-muted text-sm font-mono max-w-[1200px] mx-auto">
+      <p>&copy; {new Date().getFullYear()} dnla.mac. All rights reserved.</p>
+      <p>Built with Svelte, Tailwind CSS & TypeScript</p>
+    </div>
+  </footer>
 </div>
