@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { fade } from 'svelte/transition'
 
   type SectionId = 'home' | 'projects' | 'about' | 'contact'
 
@@ -130,62 +129,6 @@
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2C8.13 2 5 5.1 5 8.94c0 5.43 7 12.56 7 12.56s7-7.13 7-12.56C19 5.1 15.87 2 12 2Zm0 9.5A2.56 2.56 0 1 1 12 6a2.56 2.56 0 0 1 0 5.5Z"/></svg>',
   } as const
 
-  const createPdfDataUri = (title: string, lines: string[]) => {
-    const escapePdfText = (value: string) => value.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
-
-    const contentLines = ['BT', '/F1 24 Tf', '72 720 Td', `(${escapePdfText(title)}) Tj`]
-
-    for (const line of lines) {
-      contentLines.push('0 -34 Td', '/F1 14 Tf', `(${escapePdfText(line)}) Tj`)
-    }
-
-    contentLines.push('ET')
-
-    const content = contentLines.join('\n')
-    const header = '%PDF-1.4\n%âãÏÓ\n'
-    const objects = [
-      '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n',
-      '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n',
-      '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n',
-      '4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n',
-      `5 0 obj\n<< /Length ${content.length} >>\nstream\n${content}\nendstream\nendobj\n`,
-    ]
-
-    const offsets = [0]
-    let cursor = header.length
-
-    for (const object of objects) {
-      offsets.push(cursor)
-      cursor += object.length
-    }
-
-    const xrefStart = cursor
-    const xref = [
-      'xref\n0 6\n',
-      '0000000000 65535 f \n',
-      `${String(offsets[1]).padStart(10, '0')} 00000 n \n`,
-      `${String(offsets[2]).padStart(10, '0')} 00000 n \n`,
-      `${String(offsets[3]).padStart(10, '0')} 00000 n \n`,
-      `${String(offsets[4]).padStart(10, '0')} 00000 n \n`,
-      `${String(offsets[5]).padStart(10, '0')} 00000 n \n`,
-      `trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF\n`,
-    ].join('')
-
-    const pdf = header + objects.join('') + xref
-
-    return `data:application/pdf;base64,${btoa(pdf)}`
-  }
-
-  const resumePdfUri = createPdfDataUri('Danel Tungpalan Resume', [
-    'This is the downloadable resume copy for the portfolio.',
-    'Replace this placeholder with the final resume content.',
-  ])
-
-  const cvPdfUri = createPdfDataUri('Danel Tungpalan CV', [
-    'This is the downloadable CV copy for the portfolio.',
-    'Replace this placeholder with the final CV content.',
-  ])
-
   let userMessage = ''
   let copiedNumber = false
 
@@ -238,117 +181,34 @@
     syncTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
-  // Loader state
-  let isLoading = true
-  let loadProgress = 0
-
-  const toBinary = (str: string) => {
-    return str.split('').map(char => {
-      if (char === ' ' || char === '\n' || char === ',' || char === '.' || char === '/' || char === ':' || char === '@' || char === '-' || char === '|') {
-        return char
-      }
-      return Math.random() > 0.5 ? '1' : '0'
-    }).join('')
-  }
-
-  function binaryDecrypt(node: HTMLElement, { active, delay = 0 }: { active: boolean, delay?: number }) {
-    const originalText = node.innerText || node.textContent || ""
-    if (!originalText) return
-
-    let isInitialMount = true
-    let interval: any
-
-    const update = (activeState: boolean) => {
-      if (activeState) {
-        node.textContent = toBinary(originalText)
-      } else {
-        // Skip animation only if the element is newly mounted post-load
-        if (isInitialMount) {
-          node.textContent = originalText
-          isInitialMount = false
-          return
-        }
-
-        const simultaneousDelay = 150
-        setTimeout(() => {
-          const chars = originalText.split('')
-          const length = chars.length
-          const resolvedIndices = new Set<number>()
-          
-          let step = 0
-          const totalSteps = 25 // Slower duration: 25 steps * 60ms = ~1.5s total animation
-
-          interval = setInterval(() => {
-            step++
-            if (step >= totalSteps) {
-              clearInterval(interval)
-              node.textContent = originalText
-              return
-            }
-
-            // Calculate target resolved characters count for this step to sync all elements
-            const targetResolvedCount = Math.floor((step / totalSteps) * length)
-            
-            while (resolvedIndices.size < targetResolvedCount) {
-              const randomIndex = Math.floor(Math.random() * length)
-              resolvedIndices.add(randomIndex)
-            }
-
-            node.textContent = chars.map((char, idx) => {
-              if (resolvedIndices.has(idx) || char === ' ' || char === '\n' || char === ',' || char === '.' || char === '/' || char === ':' || char === '@' || char === '-' || char === '|') {
-                return char
-              }
-              return Math.random() > 0.5 ? '1' : '0'
-            }).join('')
-          }, 60)
-        }, simultaneousDelay)
-      }
-      isInitialMount = false
-    }
-
-    update(active)
-
-    return {
-      update({ active: newActive }: { active: boolean }) {
-        update(newActive)
-      },
-      destroy() {
-        clearInterval(interval)
-      }
-    }
-  }
-
   onMount(() => {
-    // Disable scrolling while loading
-    document.body.style.overflow = 'hidden'
-
-    const interval = setInterval(() => {
-      loadProgress += Math.floor(Math.random() * 8) + 4
-      if (loadProgress >= 100) {
-        loadProgress = 100
-        clearInterval(interval)
-        setTimeout(() => {
-          isLoading = false
-          document.body.style.overflow = ''
-        }, 300)
-      }
-    }, 60)
+    const savedTheme = localStorage.getItem('portfolio-theme') as 'dark' | 'light' | null
+    if (savedTheme) {
+      syncTheme(savedTheme)
+    }
 
     sectionElements = navItems
       .map(({ id }) => document.getElementById(id))
       .filter((element): element is HTMLElement => element !== null)
 
-    const handleScroll = () => updateActiveSection()
+    let ticking = false
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateActiveSection()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
 
     updateActiveSection()
     window.addEventListener('scroll', handleScroll, { passive: true })
-    window.addEventListener('resize', handleScroll)
+    window.addEventListener('resize', handleScroll, { passive: true })
 
     return () => {
-      clearInterval(interval)
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', handleScroll)
-      document.body.style.overflow = ''
     }
   })
 </script>
@@ -374,37 +234,13 @@
   <meta property="twitter:image" content="https://jeondanel.github.io/favicon.svg" />
 </svelte:head>
 
-{#if isLoading}
-  <div 
-    out:fade={{ duration: 400 }}
-    class="fixed inset-0 z-[9999] bg-[#050507] flex flex-col items-center justify-center font-mono select-none"
-  >
-    <!-- Background binary matrix rain simulation specifically for the loader -->
-    <div class="absolute inset-0 opacity-15 overflow-hidden pointer-events-none text-accent text-[11px] leading-tight break-all font-mono select-none" style="mask-image: radial-gradient(circle, black, transparent 80%);">
-      {#each Array(15) as _, i}
-        <div class="absolute top-0 text-center animate-[binary-drop_10s_linear_infinite]" style={`left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 8}s; animation-duration: ${6 + Math.random() * 8}s;`}>
-          {#each Array(40) as _}
-            <div>{Math.random() > 0.5 ? '1' : '0'}</div>
-          {/each}
-        </div>
-      {/each}
-    </div>
-
-    <!-- Center progress card -->
-    <div class="relative z-10 flex flex-col items-center gap-3 text-center">
-      <span class="text-accent text-xs tracking-[0.2em] uppercase font-bold animate-pulse">Initializing...</span>
-      <span class="text-text-strong font-bold text-5xl tracking-tight">{loadProgress}%</span>
-    </div>
-  </div>
-{/if}
-
 <div class="relative overflow-x-clip">
   <div class="background background-one"></div>
   <div class="background background-two"></div>
   <div class="binary-rain" aria-hidden="true"></div>
 
   <header class="sticky top-0 z-[100] flex items-center justify-between gap-4 p-4 md:px-[clamp(1rem,3vw,2rem)] border-b border-border-weak bg-topbar-bg backdrop-blur-[18px] max-[960px]:flex-col max-[960px]:items-start">
-    <a class="font-sans text-[1.65rem] font-bold tracking-[0.04em] text-text-strong" href="#home" use:binaryDecrypt={{ active: isLoading, delay: 0 }}>dnla.mac</a>
+    <a class="font-sans text-[1.65rem] font-bold tracking-[0.04em] text-text-strong" href="#home">dnla.mac</a>
 
     <nav aria-label="Primary" class="flex flex-wrap justify-end gap-2 max-[960px]:w-full max-[960px]:justify-start">
       {#each navItems as item}
@@ -417,7 +253,7 @@
           }`}
           aria-current={activeSection === item.id ? 'page' : undefined}
         >
-          <span use:binaryDecrypt={{ active: isLoading, delay: 100 }}>{item.label}</span>
+          <span>{item.label}</span>
         </a>
       {/each}
     </nav>
@@ -433,7 +269,7 @@
           {theme === 'dark' ? 'dark_mode' : 'light_mode'}
         </span>
         {#key theme}
-          <span use:binaryDecrypt={{ active: isLoading, delay: 200 }}>{theme === 'dark' ? 'Dark' : 'Light'}</span>
+          <span>{theme === 'dark' ? 'Dark' : 'Light'}</span>
         {/key}
       </button>
     </div>
@@ -442,9 +278,9 @@
   <main class="relative z-10 w-full mx-auto pt-[clamp(1rem,2vw,2rem)] pb-16 px-[clamp(1rem,4vw,3rem)] max-sm:px-3">
     <section id="home" class="min-h-[calc(100svh-7rem)] grid content-start gap-[0.85rem] pt-8 md:content-center py-[clamp(2rem,5vw,4rem)] px-0 scroll-mt-[6.5rem] max-[960px]:min-h-0">
       <div class="hero-copy">
-        <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold text-base max-sm:text-[1.05rem]" use:binaryDecrypt={{ active: isLoading, delay: 150 }}>Hi, I'm Danel</p>
-        <h1 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[11ch] text-[clamp(3.8rem,9vw,7rem)]" use:binaryDecrypt={{ active: isLoading, delay: 350 }}>Aspiring Quality Analyst.</h1>
-        <p class="max-w-[60ch] mt-0 mx-0 mb-12 text-[1.05rem] text-text" use:binaryDecrypt={{ active: isLoading, delay: 550 }}>
+        <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold text-base max-sm:text-[1.05rem]">Hi, I'm Danel</p>
+        <h1 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[11ch] text-[clamp(3.8rem,9vw,7rem)]">Aspiring Quality Analyst.</h1>
+        <p class="max-w-[60ch] mt-0 mx-0 mb-12 text-[1.05rem] text-text">
           I build software and microcontroller-based systems, and I'm working toward a career in
           Quality Assurance, where I can contribute to building reliable, high-quality products
           while continuously learning and growing.
@@ -467,8 +303,8 @@
                   </span>
                 {/if}
               </span>
-              <span class="text-accent text-[0.82rem] tracking-[0.16em] uppercase" use:binaryDecrypt={{ active: isLoading, delay: 600 }}>{link.label}</span>
-              <strong class="text-text-strong text-[0.98rem] font-semibold" use:binaryDecrypt={{ active: isLoading, delay: 650 }}>{link.value}</strong>
+              <span class="text-accent text-[0.82rem] tracking-[0.16em] uppercase">{link.label}</span>
+              <strong class="text-text-strong text-[0.98rem] font-semibold">{link.value}</strong>
             </a>
           {/each}
 
@@ -485,7 +321,7 @@
                   <span class="material-symbols-outlined text-[1.05rem] text-accent">assignment</span>
                 {/if}
               </span>
-              <strong class="text-accent text-[0.98rem] font-semibold" use:binaryDecrypt={{ active: isLoading, delay: 700 }}>{link.label}</strong>
+              <strong class="text-accent text-[0.98rem] font-semibold">{link.label}</strong>
               <span class="material-symbols-outlined text-[1.05rem] text-accent ml-[0.15rem]" aria-hidden="true">download</span>
             </a>
           {/each}
@@ -499,7 +335,7 @@
               {#each marqueeTechStacks as stack}
                 <li class="flex items-center gap-[0.9rem] p-4 rounded-2xl border border-border bg-surface shadow-custom min-w-[10.5rem]">
                   <i class={`inline-flex items-center justify-center w-[2.55rem] h-[2.55rem] flex-none text-[2.05rem] leading-none ${stack.icon}`} aria-hidden="true"></i>
-                  <p class="m-0 text-text-strong text-base leading-[1.35] font-semibold" use:binaryDecrypt={{ active: isLoading, delay: 750 }}>{stack.name}</p>
+                  <p class="m-0 text-text-strong text-base leading-[1.35] font-semibold">{stack.name}</p>
                 </li>
               {/each}
             </ul>
@@ -510,22 +346,22 @@
 
     <section id="projects" class="min-h-[calc(100svh-7rem)] grid content-center py-[clamp(2rem,5vw,4rem)] px-0 scroll-mt-[6.5rem] max-[960px]:min-h-0">
       <div class="grid gap-[0.75rem]">
-        <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold" use:binaryDecrypt={{ active: isLoading, delay: 400 }}>Projects</p>
-        <h2 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[12ch] text-[clamp(2.4rem,5vw,4.5rem)]" use:binaryDecrypt={{ active: isLoading, delay: 450 }}>Works I made or took part of.</h2>
+        <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold">Projects</p>
+        <h2 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[12ch] text-[clamp(2.4rem,5vw,4.5rem)]">Works I made or took part of.</h2>
       </div>
 
       <div class="grid grid-cols-3 max-[960px]:grid-cols-1 gap-4 mt-8">
         {#each projects as project}
           <article class="border border-border bg-surface shadow-custom rounded-[1.5rem] p-[1.4rem]">
             <div class="flex items-center justify-between gap-4 mb-[1.2rem]">
-              <span class="text-accent text-[1.2rem] font-bold" use:binaryDecrypt={{ active: isLoading, delay: 500 }}>{project.accent}</span>
-              <p class="text-[0.82rem] tracking-[0.16em] uppercase text-muted m-0" use:binaryDecrypt={{ active: isLoading, delay: 500 }}>Selected work</p>
+              <span class="text-accent text-[1.2rem] font-bold">{project.accent}</span>
+              <p class="text-[0.82rem] tracking-[0.16em] uppercase text-muted m-0">Selected work</p>
             </div>
-            <h3 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] text-[2.2rem]" use:binaryDecrypt={{ active: isLoading, delay: 550 }}>{project.title}</h3>
-            <p class="m-0 text-text leading-[1.7]" use:binaryDecrypt={{ active: isLoading, delay: 600 }}>{project.description}</p>
+            <h3 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] text-[2.2rem]">{project.title}</h3>
+            <p class="m-0 text-text leading-[1.7]">{project.description}</p>
             <ul class="flex flex-wrap gap-2 list-none mt-[1.25rem] mx-0 mb-0 p-0">
               {#each project.tags as tag}
-                <li class="py-[0.45rem] px-[0.75rem] rounded-full border border-border bg-chip text-[0.9rem]" use:binaryDecrypt={{ active: isLoading, delay: 650 }}>{tag}</li>
+                <li class="py-[0.45rem] px-[0.75rem] rounded-full border border-border bg-chip text-[0.9rem]">{tag}</li>
               {/each}
             </ul>
           </article>
@@ -535,15 +371,15 @@
 
     <section id="about" class="min-h-[calc(100svh-7rem)] grid content-center py-[clamp(2rem,5vw,4rem)] px-0 scroll-mt-[6.5rem] max-[960px]:min-h-0 grid-cols-[1fr_1.05fr] max-[960px]:grid-cols-1 gap-8 items-start">
       <div class="grid gap-[0.75rem]">
-        <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold" use:binaryDecrypt={{ active: isLoading, delay: 500 }}>About me</p>
-        <h2 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[12ch] text-[clamp(2.4rem,5vw,4.5rem)]" use:binaryDecrypt={{ active: isLoading, delay: 550 }}>Who am I?</h2>
+        <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold">About me</p>
+        <h2 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[12ch] text-[clamp(2.4rem,5vw,4.5rem)]">Who am I?</h2>
       </div>
 
       <div class="border border-border bg-surface shadow-custom rounded-[1.5rem] p-[1.4rem] grid gap-4">
-        <p class="m-0 text-text leading-[1.75]" use:binaryDecrypt={{ active: isLoading, delay: 600 }}>
+        <p class="m-0 text-text leading-[1.75]">
           I am Danel M. Tungpalan, an aspiring Quality Analyst with a passion for building software and microcontroller-based systems. I am dedicated to contributing to the development of reliable, high-quality products while continuously learning and growing in my career.
         </p>
-        <p class="m-0 text-text leading-[1.75]" use:binaryDecrypt={{ active: isLoading, delay: 650 }}>
+        <p class="m-0 text-text leading-[1.75]">
           I live in Quezon City, Philippines and currently studying my senior year in Bachelor of Science in Information Technology at the Quezon City University - San Bartolome Main Campus. I am eager to apply my skills and knowledge to real-world projects and make a positive impact in the field of web development, microcontrollers projects, and quality assurance.
         </p>
       </div>
@@ -551,16 +387,16 @@
 
     <section id="contact" class="min-h-[calc(100svh-7rem)] grid content-center py-[clamp(2rem,5vw,4rem)] px-0 scroll-mt-[6.5rem] max-[960px]:min-h-0 grid-cols-[1fr_1.05fr] max-[960px]:grid-cols-1 gap-8 items-start">
       <div class="grid gap-[0.75rem]">
-        <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold" use:binaryDecrypt={{ active: isLoading, delay: 600 }}>Contact</p>
-        <h2 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[12ch] text-[clamp(2.4rem,5vw,4.5rem)]" use:binaryDecrypt={{ active: isLoading, delay: 650 }}>Let's connect!</h2>
+        <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold">Contact</p>
+        <h2 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[12ch] text-[clamp(2.4rem,5vw,4.5rem)]">Let's connect!</h2>
       </div>
 
       <div class="grid gap-4 w-full">
         <!-- Email Card with Message Field -->
         <div class="border border-border bg-surface shadow-custom flex flex-col gap-4 p-5 rounded-[1.4rem]">
           <div class="flex items-center justify-between gap-4">
-            <span class="text-muted text-[0.85rem] tracking-[0.16em] uppercase" use:binaryDecrypt={{ active: isLoading, delay: 700 }}>Email</span>
-            <strong class="m-0 text-right text-text-strong break-all max-sm:text-left text-sm font-semibold" use:binaryDecrypt={{ active: isLoading, delay: 750 }}>danelmacujatungpalan@gmail.com</strong>
+            <span class="text-muted text-[0.85rem] tracking-[0.16em] uppercase">Email</span>
+            <strong class="m-0 text-right text-text-strong break-all max-sm:text-left text-sm font-semibold">danelmacujatungpalan@gmail.com</strong>
           </div>
           
           <textarea
@@ -573,7 +409,7 @@
             href={emailHref}
             class="inline-flex items-center justify-center py-2 px-6 rounded-full bg-accent hover:bg-accent-2 text-text-strong font-semibold text-sm transition-all duration-[160ms] self-end cursor-pointer"
           >
-            <span use:binaryDecrypt={{ active: isLoading, delay: 800 }}>Send Email</span>
+            <span>Send Email</span>
           </a>
         </div>
 
@@ -582,12 +418,12 @@
           on:click={handleCopyNumber}
           class="border border-border bg-surface shadow-custom flex items-center justify-between gap-4 p-[1.2rem_1.4rem] rounded-[1.4rem] leading-[1.75] transition-all duration-[160ms] ease-out hover:-translate-y-[2px] hover:border-[rgba(126,231,255,0.28)] hover:bg-chip-hover w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(126,231,255,0.75)] focus-visible:outline-offset-2"
         >
-          <span class="text-muted text-[0.85rem] tracking-[0.16em] uppercase" use:binaryDecrypt={{ active: isLoading, delay: 700 }}>Contact Number</span>
+          <span class="text-muted text-[0.85rem] tracking-[0.16em] uppercase">Contact Number</span>
           <strong class="m-0 text-right text-text-strong break-all max-sm:text-left">
             {#if copiedNumber}
               Copied!
             {:else}
-              <span use:binaryDecrypt={{ active: isLoading, delay: 750 }}>09674801002</span>
+              <span>09674801002</span>
             {/if}
           </strong>
         </button>
