@@ -1,5 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import htmlIcon from 'devicon/icons/html5/html5-plain.svg'
+  import tailwindIcon from 'devicon/icons/tailwindcss/tailwindcss-original.svg'
+  import javascriptIcon from 'devicon/icons/javascript/javascript-plain.svg'
+  import phpIcon from 'devicon/icons/php/php-plain.svg'
+  import svelteIcon from 'devicon/icons/svelte/svelte-plain.svg'
+  import visualBasicIcon from 'devicon/icons/visualbasic/visualbasic-plain.svg'
+  import dotNetIcon from 'devicon/icons/dot-net/dot-net-plain.svg'
+  import arduinoIcon from 'devicon/icons/arduino/arduino-plain.svg'
 
   type SectionId = 'home' | 'projects' | 'about' | 'contact'
 
@@ -62,14 +70,14 @@
   ]
 
   const techStacks = [
-    { name: 'HTML', icon: 'devicon-html5-plain colored' },
-    { name: 'CSS / Tailwind', icon: 'devicon-tailwindcss-plain colored' },
-    { name: 'JavaScript', icon: 'devicon-javascript-plain colored' },
-    { name: 'PHP', icon: 'devicon-php-plain colored' },
-    { name: 'Svelte', icon: 'devicon-svelte-plain colored' },
-    { name: 'Visual Basic .NET', icon: 'devicon-visualbasic-plain colored' },
-    { name: 'ASP.NET MVC', icon: 'devicon-dot-net-plain colored' },
-    { name: 'C++ for Arduino', icon: 'devicon-arduino-plain colored' },
+    { name: 'HTML', icon: htmlIcon },
+    { name: 'CSS / Tailwind', icon: tailwindIcon },
+    { name: 'JavaScript', icon: javascriptIcon },
+    { name: 'PHP', icon: phpIcon },
+    { name: 'Svelte', icon: svelteIcon },
+    { name: 'Visual Basic .NET', icon: visualBasicIcon },
+    { name: 'ASP.NET MVC', icon: dotNetIcon },
+    { name: 'C++ for Arduino', icon: arduinoIcon },
   ]
 
   const marqueeTechStacks = [...techStacks, ...techStacks]
@@ -194,6 +202,8 @@
   let theme: 'dark' | 'light' = 'dark'
   let carouselElement: HTMLElement | null = null
   let isCarouselVisible = true
+  let isPageVisible = true
+  let headerElement: HTMLElement
 
   const syncTheme = (nextTheme: 'dark' | 'light') => {
     theme = nextTheme
@@ -206,6 +216,19 @@
   }
 
   onMount(() => {
+    const syncVisibility = () => {
+      isPageVisible = !document.hidden
+    }
+    syncVisibility()
+    document.addEventListener('visibilitychange', syncVisibility)
+
+    // Keep anchor targets below the header, including its wrapped mobile layout.
+    const headerObserver = new ResizeObserver(([entry]) => {
+      const height = entry.borderBoxSize[0]?.blockSize ?? headerElement.offsetHeight
+      document.documentElement.style.setProperty('--header-height', `${height}px`)
+    })
+    headerObserver.observe(headerElement)
+
     const savedTheme = localStorage.getItem('portfolio-theme') as 'dark' | 'light' | null
     if (savedTheme) {
       syncTheme(savedTheme)
@@ -241,7 +264,7 @@
       }
     })
 
-    // Pause carousel animation when offscreen to completely eliminate scroll lag
+    // Avoid animating the carousel while it is outside the viewport.
     let carouselObserver: IntersectionObserver | null = null
     if (carouselElement) {
       carouselObserver = new IntersectionObserver(
@@ -254,6 +277,9 @@
     }
 
     return () => {
+      document.removeEventListener('visibilitychange', syncVisibility)
+      headerObserver.disconnect()
+      document.documentElement.style.removeProperty('--header-height')
       observer.disconnect()
       if (carouselObserver) {
         carouselObserver.disconnect()
@@ -283,10 +309,10 @@
   <meta property="twitter:image" content="https://jeondanel.github.io/favicon.svg" />
 </svelte:head>
 
-<div class="relative overflow-x-clip">
+<div class="relative overflow-x-clip" class:animations-paused={!isPageVisible}>
   <div class="binary-rain" aria-hidden="true"></div>
 
-  <header class="site-header sticky top-0 z-[100] flex items-center justify-between gap-4 p-4 md:px-[clamp(1rem,3vw,2rem)] border-b border-border-weak bg-[var(--topbar-bg-solid)] max-[960px]:flex-col max-[960px]:items-start">
+  <header bind:this={headerElement} class="site-header sticky top-0 z-[100] flex items-center justify-between gap-4 p-4 md:px-[clamp(1rem,3vw,2rem)] border-b border-border-weak bg-[var(--topbar-bg-solid)] max-[960px]:flex-col max-[960px]:items-start">
     <a class="font-sans text-[1.65rem] font-bold tracking-[0.04em] text-text-strong" href="#home">dnla.mac</a>
 
     <nav aria-label="Primary" class="flex flex-wrap justify-end gap-2 max-[960px]:w-full max-[960px]:justify-start">
@@ -381,11 +407,13 @@
 
             <ul
               class="tech-carousel-track list-none p-0 m-0"
-              style:animation-play-state={isCarouselVisible ? 'running' : 'paused'}
+              class:is-paused={!isCarouselVisible || !isPageVisible}
             >
               {#each marqueeTechStacks as stack}
                 <li class="flex items-center gap-[0.9rem] p-4 rounded-2xl border border-border bg-surface min-w-[10.5rem] mr-3">
-                  <i class={`inline-flex items-center justify-center w-[2.55rem] h-[2.55rem] flex-none text-[2.05rem] leading-none ${stack.icon}`} aria-hidden="true"></i>
+                  <span class="inline-flex items-center justify-center w-[2.55rem] h-[2.55rem] flex-none" aria-hidden="true">
+                    <img src={stack.icon} alt="" width="33" height="33" class="w-[2.05rem] h-[2.05rem]" decoding="async" />
+                  </span>
                   <p class="m-0 text-text-strong text-base leading-[1.35] font-semibold">{stack.name}</p>
                 </li>
               {/each}

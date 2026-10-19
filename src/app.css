@@ -41,6 +41,8 @@
 
 html {
   overflow-x: clip;
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-height, 7rem);
 }
 
 body {
@@ -85,11 +87,8 @@ body {
   background-color: var(--topbar-bg-solid);
 }
 
-#projects,
-#about,
-#contact {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 450px;
+main > section {
+  scroll-margin-top: 1rem;
 }
 
 .binary-rain {
@@ -152,6 +151,11 @@ body {
   contain: layout paint;
 }
 
+.tech-carousel-track.is-paused,
+.animations-paused .binary-rain::before {
+  animation-play-state: paused;
+}
+
 @media (hover: hover) {
   .tech-carousel-track:hover {
     animation-play-state: paused;
@@ -159,6 +163,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .binary-rain::before,
   .tech-carousel-track {
     animation: none;
