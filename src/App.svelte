@@ -140,6 +140,8 @@
   let senderName = ''
   let senderEmail = ''
   let userMessage = ''
+  const web3formsAccessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY?.trim()
+  let botcheck = false
   let isSending = false
   let sendStatus: 'idle' | 'success' | 'error' = 'idle'
   let copiedNumber = false
@@ -156,7 +158,11 @@
 
   const handleSendMessage = async (e: SubmitEvent) => {
     e.preventDefault()
-    if (!userMessage.trim() || !senderEmail.trim()) return
+    if (!isFormValid || isSending || botcheck) return
+    if (!web3formsAccessKey) {
+      sendStatus = 'error'
+      return
+    }
 
     isSending = true
     sendStatus = 'idle'
@@ -169,7 +175,8 @@
           Accept: 'application/json',
         },
         body: JSON.stringify({
-          access_key: '157813a9-484b-4522-a703-17915c72d179',
+          access_key: web3formsAccessKey,
+          botcheck,
           from_name: `${senderName.trim() || 'Portfolio Visitor'}`,
           replyto: senderEmail.trim(),
           name: senderName.trim(),
@@ -180,7 +187,7 @@
       })
 
       const data = await response.json()
-      if (data.success) {
+      if (response.ok && data.success === true) {
         sendStatus = 'success'
         senderName = ''
         senderEmail = ''
@@ -498,6 +505,8 @@
             />
           </div>
 
+          <input type="checkbox" name="botcheck" bind:checked={botcheck} tabindex="-1" aria-hidden="true" style="display: none" />
+
           <textarea
             bind:value={userMessage}
             placeholder="Type your message here..."
@@ -515,16 +524,16 @@
               {:else if sendStatus === 'error'}
                 <span class="text-red-500 flex items-center gap-1">
                   <span class="material-symbols-outlined text-[1rem]">error</span>
-                  Failed to send. Please try again.
+                  Unable to send. Please try again or email me directly.
                 </span>
               {/if}
             </div>
 
             <button 
               type="submit"
-              disabled={!isFormValid || isSending}
+              disabled={!isFormValid || isSending || !web3formsAccessKey}
               class={`inline-flex items-center justify-center py-2 px-6 rounded-full font-semibold text-sm transition-all duration-[160ms] ${
-                isFormValid && !isSending
+                isFormValid && !isSending && web3formsAccessKey
                   ? 'bg-accent hover:bg-accent-2 !text-white cursor-pointer shadow-[0_4px_16px_rgba(255,48,48,0.35)] hover:-translate-y-[1px]'
                   : 'bg-chip text-muted border border-border/40 cursor-not-allowed opacity-50'
               }`}
