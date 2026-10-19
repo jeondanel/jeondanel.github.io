@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import htmlIcon from 'devicon/icons/html5/html5-plain.svg'
+  import cssIcon from 'devicon/icons/css3/css3-original.svg'
+  import cppIcon from 'devicon/icons/cplusplus/cplusplus-original.svg'
   import tailwindIcon from 'devicon/icons/tailwindcss/tailwindcss-original.svg'
   import javascriptIcon from 'devicon/icons/javascript/javascript-plain.svg'
   import phpIcon from 'devicon/icons/php/php-plain.svg'
@@ -9,7 +11,7 @@
   import dotNetIcon from 'devicon/icons/dot-net/dot-net-plain.svg'
   import arduinoIcon from 'devicon/icons/arduino/arduino-plain.svg'
 
-  type SectionId = 'home' | 'projects' | 'about' | 'contact'
+  type SectionId = 'home' | 'projects' | 'publications' | 'about' | 'contact'
 
   type NavItem = {
     id: SectionId
@@ -41,6 +43,7 @@
   const navItems: NavItem[] = [
     { id: 'home', label: 'Home' },
     { id: 'projects', label: 'Projects' },
+    { id: 'publications', label: 'Publications' },
     { id: 'about', label: 'About Me' },
     { id: 'contact', label: 'Contact' },
   ]
@@ -71,13 +74,15 @@
 
   const techStacks = [
     { name: 'HTML', icon: htmlIcon },
-    { name: 'CSS / Tailwind', icon: tailwindIcon },
+    { name: 'CSS', icon: cssIcon },
+    { name: 'Tailwind CSS', icon: tailwindIcon },
     { name: 'JavaScript', icon: javascriptIcon },
     { name: 'PHP', icon: phpIcon },
     { name: 'Svelte', icon: svelteIcon },
     { name: 'Visual Basic .NET', icon: visualBasicIcon },
     { name: 'ASP.NET MVC', icon: dotNetIcon },
-    { name: 'C++ for Arduino', icon: arduinoIcon },
+    { name: 'C++', icon: cppIcon },
+    { name: 'Arduino', icon: arduinoIcon },
   ]
 
   const marqueeTechStacks = [...techStacks, ...techStacks]
@@ -144,16 +149,24 @@
   let botcheck = false
   let isSending = false
   let sendStatus: 'idle' | 'success' | 'error' = 'idle'
-  let copiedNumber = false
+  $: isFormValid = Boolean(
+    senderName.trim() && senderName.length <= 100 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail.trim()) && senderEmail.length <= 254 &&
+    userMessage.trim() && userMessage.length <= 5000
+  )
 
-  $: isFormValid = Boolean(senderName.trim() && senderEmail.trim() && userMessage.trim())
+  let copyStatus = ''
+  let copyResetTimer: ReturnType<typeof setTimeout> | undefined
 
-  const handleCopyNumber = () => {
-    navigator.clipboard.writeText('09674801002')
-    copiedNumber = true
-    setTimeout(() => {
-      copiedNumber = false
-    }, 2000)
+  const handleCopyNumber = async () => {
+    try {
+      await navigator.clipboard.writeText('09674801002')
+      copyStatus = 'Copied!'
+    } catch {
+      copyStatus = 'Select the number to copy it.'
+    }
+    clearTimeout(copyResetTimer)
+    copyResetTimer = setTimeout(() => { copyStatus = '' }, 2500)
   }
 
   const handleSendMessage = async (e: SubmitEvent) => {
@@ -167,9 +180,12 @@
     isSending = true
     sendStatus = 'idle'
 
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 15000)
     try {
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -201,7 +217,24 @@
     } catch (err) {
       sendStatus = 'error'
     } finally {
+      window.clearTimeout(timeout)
       isSending = false
+    }
+  }
+
+  let isMenuOpen = false
+  let menuButton: HTMLButtonElement
+
+  const handleMenuKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && isMenuOpen) {
+      isMenuOpen = false
+      menuButton.focus()
+    }
+  }
+
+  const handleOutsideClick = (event: MouseEvent) => {
+    if (!event.composedPath().includes(headerElement)) {
+      isMenuOpen = false
     }
   }
 
@@ -284,6 +317,7 @@
     }
 
     return () => {
+      clearTimeout(copyResetTimer)
       document.removeEventListener('visibilitychange', syncVisibility)
       headerObserver.disconnect()
       document.documentElement.style.removeProperty('--header-height')
@@ -294,6 +328,8 @@
     }
   })
 </script>
+
+<svelte:window on:keydown={handleMenuKey} on:click={handleOutsideClick} />
 
 <svelte:head>
   <title>Danel Tungpalan | Aspiring Quality Analyst & Developer</title>
@@ -319,14 +355,15 @@
 <div class="relative overflow-x-clip" class:animations-paused={!isPageVisible}>
   <div class="binary-rain" aria-hidden="true"></div>
 
-  <header bind:this={headerElement} class="site-header sticky top-0 z-[100] flex items-center justify-between gap-4 p-4 md:px-[clamp(1rem,3vw,2rem)] border-b border-border-weak bg-[var(--topbar-bg-solid)] max-[960px]:flex-col max-[960px]:items-start">
-    <a class="font-sans text-[1.65rem] font-bold tracking-[0.04em] text-text-strong" href="#home">dnla.mac</a>
+  <header bind:this={headerElement} class="site-header sticky top-0 z-[100] flex items-center justify-between gap-4 p-4 md:px-[clamp(1rem,3vw,2rem)] border-b border-border-weak bg-[var(--topbar-bg-solid)]">
+    <a class="font-sans text-[1.65rem] font-bold tracking-[0.04em] text-text-strong" href="#home" on:click={() => { isMenuOpen = false }}>dnla.mac</a>
 
-    <nav aria-label="Primary" class="flex flex-wrap justify-end gap-2 max-[960px]:w-full max-[960px]:justify-start">
+    <nav id="primary-navigation" aria-label="Primary" class="primary-navigation flex flex-wrap justify-end gap-2" class:menu-open={isMenuOpen}>
       {#each navItems as item}
         <a
           href={`#${item.id}`}
-          class={`inline-flex items-center gap-0 py-[0.78rem] px-4 border border-transparent rounded-full bg-chip text-muted text-[0.95rem] transition-all duration-[160ms] ease-out hover:-translate-y-[1px] hover:border-[rgba(255,48,48,0.28)] hover:text-text-strong hover:bg-chip-hover hover:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:-translate-y-[1px] focus-visible:border-[rgba(255,48,48,0.28)] focus-visible:text-text-strong focus-visible:bg-chip-hover focus-visible:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(126,231,255,0.75)] focus-visible:outline-offset-2 max-sm:flex-[1_1_calc(50%-0.5rem)] max-sm:justify-center ${
+          on:click={() => { isMenuOpen = false }}
+          class={`inline-flex items-center gap-0 py-[0.78rem] px-4 border border-transparent rounded-full bg-chip text-muted text-[0.95rem] transition-all duration-[160ms] ease-out hover:-translate-y-[1px] hover:border-[rgba(255,48,48,0.28)] hover:text-text-strong hover:bg-chip-hover hover:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:-translate-y-[1px] focus-visible:border-[rgba(255,48,48,0.28)] focus-visible:text-text-strong focus-visible:bg-chip-hover focus-visible:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(126,231,255,0.75)] focus-visible:outline-offset-2 ${
             activeSection === item.id 
               ? '-translate-y-[1px] border-[rgba(255,48,48,0.28)] text-text-strong bg-chip-hover shadow-[0_14px_30px_rgba(0,0,0,0.18),_inset_0_0_0_1px_rgba(255,48,48,0.55)]' 
               : ''
@@ -337,7 +374,7 @@
         </a>
       {/each}
     </nav>
-    <div class="flex items-center gap-3">
+    <div class="header-actions flex items-center gap-2">
       <button
         type="button"
         class="inline-flex items-center justify-center w-11 h-11 border border-transparent rounded-full bg-chip text-muted cursor-pointer transition-all duration-[160ms] ease-out hover:-translate-y-[1px] hover:border-[rgba(126,231,255,0.28)] hover:text-text-strong hover:bg-chip-hover hover:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:-translate-y-[1px] focus-visible:border-[rgba(126,231,255,0.28)] focus-visible:text-text-strong focus-visible:bg-chip-hover focus-visible:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(126,231,255,0.75)] focus-visible:outline-offset-2"
@@ -349,6 +386,23 @@
           {theme === 'dark' ? 'dark_mode' : 'light_mode'}
         </span>
       </button>
+      <button
+        bind:this={menuButton}
+        type="button"
+        class="menu-toggle"
+        aria-label={isMenuOpen ? 'Close navigation' : 'Open navigation'}
+        aria-expanded={isMenuOpen}
+        aria-controls="primary-navigation"
+        on:click={() => { isMenuOpen = !isMenuOpen }}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          {#if isMenuOpen}
+            <path d="m6 6 12 12M6 18 18 6" />
+          {:else}
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          {/if}
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -357,7 +411,7 @@
       <div class="hero-copy">
         <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold text-base max-sm:text-[1.05rem]">Hi, I'm Danel</p>
         <h1 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] max-w-[11ch] text-[clamp(3.8rem,9vw,7rem)]">Aspiring Quality Analyst.</h1>
-        <p class="max-w-[60ch] mt-0 mx-0 mb-12 text-[1.05rem] text-text">
+        <p class="prose-copy max-w-[60ch] mt-0 mx-0 mb-12 text-[1.05rem] text-text">
           I build software and microcontroller-based systems, and I'm working toward a career in
           Quality Assurance, where I can contribute to building reliable, high-quality products
           while continuously learning and growing.
@@ -444,7 +498,7 @@
               <p class="text-[0.82rem] tracking-[0.16em] uppercase text-muted m-0">Selected work</p>
             </div>
             <h3 class="m-0 mb-8 font-sans font-bold text-text-strong leading-[0.94] text-[2.2rem]">{project.title}</h3>
-            <p class="m-0 text-text leading-[1.7]">{project.description}</p>
+            <p class="prose-copy m-0 text-text leading-[1.7]">{project.description}</p>
             <ul class="flex flex-wrap gap-2 list-none mt-[1.25rem] mx-0 mb-0 p-0">
               {#each project.tags as tag}
                 <li class="py-[0.45rem] px-[0.75rem] rounded-full border border-border bg-chip text-[0.9rem]">{tag}</li>
@@ -455,6 +509,21 @@
       </div>
     </section>
 
+    <section id="publications" class="grid gap-8 py-[clamp(2rem,5vw,4rem)] scroll-mt-[6.5rem]">
+      <div>
+        <p class="mt-0 mb-8 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold">Publications</p>
+        <h2 class="m-0 font-sans font-bold text-text-strong leading-tight text-[clamp(2.4rem,5vw,4.5rem)]">Research I co-authored.</h2>
+      </div>
+      <article class="border border-border bg-surface shadow-custom rounded-[1.5rem] p-[1.4rem] grid gap-5">
+        <p class="m-0 text-accent text-sm font-semibold">IJLTEMAS &middot; Published June 2, 2026</p>
+        <h3 class="m-0 font-sans font-bold text-text-strong leading-snug text-[clamp(1.4rem,3vw,2rem)]">Academic Task Overload and its Influence on the Productivity and Mental Health of Information Technology Students: A Basis for Curriculum Review</h3>
+        <p class="m-0 text-muted leading-relaxed">Mary Fatima S. Collado, Harold R. Lucero, Danel M. Tungpalan, Cyril Yvette D. Espiritu, Alyssa S. Gal, and Justine Keith D. Meneses</p>
+        <p class="prose-copy m-0 text-text leading-relaxed">A survey of 400 Information Technology students at Quezon City University exploring how academic workload relates to productivity and mental health, with implications for curriculum review.</p>
+        <p class="m-0 text-muted text-sm">Volume 15, Issue 5 &middot; Pages 1018&ndash;1030 &middot; DOI: 10.51583/IJLTEMAS.2026.150500087</p>
+        <a href="https://www.ijltemas.in/submission/online/article/view/4800" target="_blank" rel="noopener noreferrer" class="justify-self-start rounded-full border border-border bg-chip px-5 py-3 font-semibold text-accent hover:bg-chip-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Read publication &nearr;</a>
+      </article>
+    </section>
+
     <section id="about" class="min-h-[calc(100svh-7rem)] grid content-center py-[clamp(2rem,5vw,4rem)] px-0 scroll-mt-[6.5rem] max-[960px]:min-h-0 grid-cols-[1fr_1.05fr] max-[960px]:grid-cols-1 gap-8 items-start">
       <div class="grid gap-[0.75rem]">
         <p class="mt-0 mx-0 mb-12 text-accent uppercase tracking-[0.24em] text-[0.98rem] font-bold">About me</p>
@@ -462,10 +531,10 @@
       </div>
 
       <div class="border border-border bg-surface shadow-custom rounded-[1.5rem] p-[1.4rem] grid gap-4">
-        <p class="m-0 text-text leading-[1.75]">
+        <p class="prose-copy m-0 text-text leading-[1.75]">
           I am Danel M. Tungpalan, an aspiring Quality Analyst with a passion for building software and microcontroller-based systems. I am dedicated to contributing to the development of reliable, high-quality products while continuously learning and growing in my career.
         </p>
-        <p class="m-0 text-text leading-[1.75]">
+        <p class="prose-copy m-0 text-text leading-[1.75]">
           I live in Quezon City, Philippines and currently studying my senior year in Bachelor of Science in Information Technology at the Quezon City University - San Bartolome Main Campus. I am eager to apply my skills and knowledge to real-world projects and make a positive impact in the field of web development, microcontrollers projects, and quality assurance.
         </p>
       </div>
@@ -483,7 +552,7 @@
           on:submit={handleSendMessage}
           class="border border-border bg-surface shadow-custom flex flex-col gap-3 p-5 rounded-[1.4rem]"
         >
-          <div class="flex items-center justify-between gap-4">
+          <div class="contact-form-heading flex items-center justify-between gap-4">
             <span class="text-muted text-[0.85rem] tracking-[0.16em] uppercase">Send a Message</span>
             <strong class="m-0 text-right text-text-strong break-all max-sm:text-left text-sm font-semibold">danelmacujatungpalan@gmail.com</strong>
           </div>
@@ -493,6 +562,8 @@
               type="text"
               bind:value={senderName}
               placeholder="Your Name"
+              aria-label="Your Name"
+              maxlength="100"
               required
               class="w-full p-3 rounded-xl border border-border/60 bg-bg text-text placeholder-muted focus:outline-none focus:border-accent text-sm font-sans"
             />
@@ -500,6 +571,8 @@
               type="email"
               bind:value={senderEmail}
               placeholder="Your Email"
+              aria-label="Your Email"
+              maxlength="254"
               required
               class="w-full p-3 rounded-xl border border-border/60 bg-bg text-text placeholder-muted focus:outline-none focus:border-accent text-sm font-sans"
             />
@@ -510,12 +583,14 @@
           <textarea
             bind:value={userMessage}
             placeholder="Type your message here..."
+            aria-label="Your Message"
+            maxlength="5000"
             required
             class="w-full p-3 rounded-xl border border-border/60 bg-bg text-text placeholder-muted focus:outline-none focus:border-accent resize-none h-24 text-sm font-sans"
           ></textarea>
 
-          <div class="flex items-center justify-between gap-4 mt-1">
-            <div class="text-xs font-medium">
+          <div class="contact-form-actions flex items-center justify-between gap-4 mt-1">
+            <div class="text-xs font-medium" role="status" aria-live="polite">
               {#if sendStatus === 'success'}
                 <span class="text-green-500 flex items-center gap-1">
                   <span class="material-symbols-outlined text-[1rem]">check_circle</span>
@@ -543,17 +618,15 @@
           </div>
         </form>
 
-        <!-- Phone Card with Copy Feature -->
-        <button 
-          on:click={handleCopyNumber}
+        <!-- Contact phone number -->
+        <button type="button" on:click={handleCopyNumber} aria-label="Copy contact number"
           class="border border-border bg-surface shadow-custom flex items-center justify-between gap-4 p-[1.2rem_1.4rem] rounded-[1.4rem] leading-[1.75] transition-all duration-[160ms] ease-out hover:-translate-y-[2px] hover:border-[rgba(126,231,255,0.28)] hover:bg-chip-hover w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(126,231,255,0.75)] focus-visible:outline-offset-2"
         >
           <span class="text-muted text-[0.85rem] tracking-[0.16em] uppercase">Contact Number</span>
           <strong class="m-0 text-right text-text-strong break-all max-sm:text-left">
-            {#if copiedNumber}
-              Copied!
-            {:else}
-              <span>09674801002</span>
+            <span class="contact-number" role="status">{copyStatus === 'Copied!' ? 'Copied!' : '09674801002'}</span>
+            {#if copyStatus && copyStatus !== 'Copied!'}
+              <span class="block text-xs text-muted">{copyStatus}</span>
             {/if}
           </strong>
         </button>
@@ -568,3 +641,4 @@
     </div>
   </footer>
 </div>
+

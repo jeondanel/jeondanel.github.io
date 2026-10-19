@@ -156,11 +156,6 @@ main > section {
   animation-play-state: paused;
 }
 
-@media (hover: hover) {
-  .tech-carousel-track:hover {
-    animation-play-state: paused;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -179,4 +174,125 @@ main > section {
   justify-content: center;
   line-height: 1;
   user-select: none;
+}
+
+/* Prevent page-text highlighting while preserving contact and form usability. */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+.contact-number {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Justify prose only; leave UI labels, headings, and the final line natural. */
+.prose-copy {
+  text-align: justify;
+  text-align-last: start;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+main > section > *,
+main article,
+#contact form {
+  min-width: 0;
+}
+
+#publications article {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .contact-form-heading,
+  .contact-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .contact-form-heading strong {
+    text-align: left;
+  }
+
+  .contact-form-actions button {
+    min-height: 44px;
+  }
+
+  #home h1 {
+    font-size: clamp(2.7rem, 11.5vw, 4rem);
+  }
+
+  #home [aria-label="Social links and downloads"] a {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  #home [aria-label="Social links and downloads"] strong {
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+}
+
+.header-actions {
+  flex-shrink: 0;
+}
+
+.menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--chip-bg);
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.menu-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1100px) {
+  .site-header {
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .primary-navigation {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 16px;
+    width: min(320px, calc(100vw - 32px));
+    max-height: calc(100dvh - 100px);
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--topbar-bg-solid);
+    box-shadow: var(--shadow);
+  }
+
+  .primary-navigation.menu-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .primary-navigation a {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 12px;
+    justify-content: flex-start;
+  }
 }
