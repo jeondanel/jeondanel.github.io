@@ -1,16 +1,13 @@
 @import 'devicon/devicon.min.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 :root {
   --bg: #050507;
-  --page-bg:
-    radial-gradient(circle at top right, rgba(255, 48, 48, 0.12), transparent 24%),
-    radial-gradient(circle at left 28%, rgba(255, 0, 0, 0.08), transparent 28%),
-    linear-gradient(180deg, #030304 0%, #09090b 52%, #030304 100%);
+  --page-bg: linear-gradient(180deg, #030304 0%, #09090b 52%, #030304 100%);
   --topbar-bg: rgba(5, 5, 7, 0.8);
+  --topbar-bg-solid: rgba(7, 7, 9, 0.96);
   --surface: linear-gradient(180deg, rgba(16, 8, 8, 0.9), rgba(8, 6, 6, 0.94));
   --chip-bg: rgba(255, 255, 255, 0.02);
   --chip-hover-bg: rgba(255, 48, 48, 0.12);
@@ -27,19 +24,17 @@
 
 :root[data-theme='light'] {
   --bg: #fbf4f4;
-  --page-bg:
-    radial-gradient(circle at top right, rgba(255, 48, 48, 0.12), transparent 26%),
-    radial-gradient(circle at left 28%, rgba(255, 110, 110, 0.12), transparent 28%),
-    linear-gradient(180deg, #fff7f7 0%, #f8eded 52%, #fffafb 100%);
+  --page-bg: linear-gradient(180deg, #fff7f7 0%, #f8eded 52%, #fffafb 100%);
   --topbar-bg: rgba(255, 247, 247, 0.82);
+  --topbar-bg-solid: rgba(251, 244, 244, 0.97);
   --surface: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 236, 236, 0.94));
   --chip-bg: rgba(35, 8, 8, 0.04);
   --chip-hover-bg: rgba(255, 48, 48, 0.1);
   --border: rgba(144, 34, 34, 0.14);
   --border-weak: rgba(144, 34, 34, 0.08);
-  --text: #332222;
-  --text-strong: #180f0f;
-  --muted: #6e5555;
+  --text: #222222;
+  --text-strong: #000000;
+  --muted: #555555;
   --accent: #c30000;
   --accent-2: #7b0000;
   --muted-dot: rgba(110, 85, 85, 0.7);
@@ -47,7 +42,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   overflow-x: clip;
 }
 
@@ -59,19 +53,26 @@ body {
   color: var(--text);
   font-family: 'Poppins', sans-serif;
   font-synthesis: none;
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: var(--text);
-  text-decoration: none;
-}
+@layer base {
+  a {
+    color: var(--text);
+    text-decoration: none;
+  }
 
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  strong,
+  strong a,
+  strong a:visited {
+    color: inherit;
+  }
 }
 
 ::selection {
@@ -79,30 +80,18 @@ a {
   color: var(--text-strong);
 }
 
-.background {
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--topbar-bg-solid);
 }
 
-.background-one {
-  top: -10rem;
-  right: -8rem;
-  width: 26rem;
-  height: 26rem;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 48, 48, 0.18) 0%, rgba(255, 48, 48, 0.06) 45%, transparent 70%);
-}
-
-.background-two {
-  bottom: 14rem;
-  left: -8rem;
-  width: 24rem;
-  height: 24rem;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(180, 0, 0, 0.16) 0%, rgba(180, 0, 0, 0.05) 45%, transparent 70%);
+#projects,
+#about,
+#contact {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 450px;
 }
 
 .binary-rain {
@@ -116,7 +105,8 @@ a {
     linear-gradient(90deg, rgba(255, 48, 48, 0.02) 1px, transparent 1px);
   background-size: 48px 48px;
   contain: strict;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 .binary-rain::before {
@@ -130,7 +120,9 @@ a {
   white-space: pre-wrap;
   line-height: 2.2;
   will-change: transform;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  contain: strict;
   animation: binary-drop 20s linear infinite;
 }
 
@@ -148,17 +140,24 @@ a {
     transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translate3d(calc(-50% - 0.375rem), 0, 0);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 .tech-carousel-track {
   display: flex;
   width: max-content;
-  gap: 0.75rem;
-  animation: marquee-scroll 18s linear infinite;
+  animation: marquee-scroll 20s linear infinite;
   will-change: transform;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  contain: layout paint;
+}
+
+@media (hover: hover) {
+  .tech-carousel-track:hover {
+    animation-play-state: paused;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
