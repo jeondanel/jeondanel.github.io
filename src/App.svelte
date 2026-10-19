@@ -105,14 +105,14 @@
     {
       label: 'Resume',
       value: 'Download PDF',
-      href: `${import.meta.env.BASE_URL}Danel-Tungpalan-Resume.pdf`,
+      href: '/resume.pdf',
       downloadName: 'Danel-Tungpalan-Resume.pdf',
       icon: 'resume',
     },
     {
       label: 'CV',
       value: 'Download PDF',
-      href: `${import.meta.env.BASE_URL}Danel-Tungpalan-CV.pdf`,
+      href: '/cv.pdf',
       downloadName: 'Danel-Tungpalan-CV.pdf',
       icon: 'cv',
     },
@@ -129,14 +129,8 @@
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2C8.13 2 5 5.1 5 8.94c0 5.43 7 12.56 7 12.56s7-7.13 7-12.56C19 5.1 15.87 2 12 2Zm0 9.5A2.56 2.56 0 1 1 12 6a2.56 2.56 0 0 1 0 5.5Z"/></svg>',
   } as const
 
-  let senderName = ''
-  let senderEmail = ''
   let userMessage = ''
-  let isSending = false
-  let sendStatus: 'idle' | 'success' | 'error' = 'idle'
   let copiedNumber = false
-
-  $: isFormValid = Boolean(senderName.trim() && senderEmail.trim() && userMessage.trim())
 
   const handleCopyNumber = () => {
     navigator.clipboard.writeText('09674801002')
@@ -146,54 +140,10 @@
     }, 2000)
   }
 
-  const handleSendMessage = async (e: SubmitEvent) => {
-    e.preventDefault()
-    if (!userMessage.trim() || !senderEmail.trim()) return
-
-    isSending = true
-    sendStatus = 'idle'
-
-    try {
-      const response = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          access_key: '157813a9-484b-4522-a703-17915c72d179',
-          from_name: `${senderName.trim() || 'Portfolio Visitor'}`,
-          replyto: senderEmail.trim(),
-          name: senderName.trim(),
-          email: senderEmail.trim(),
-          message: userMessage.trim(),
-          subject: `Portfolio Message from ${senderName.trim() || 'Visitor'}`,
-        }),
-      })
-
-      const data = await response.json()
-      if (data.success) {
-        sendStatus = 'success'
-        senderName = ''
-        senderEmail = ''
-        userMessage = ''
-        setTimeout(() => {
-          sendStatus = 'idle'
-        }, 6000)
-      } else {
-        sendStatus = 'error'
-      }
-    } catch (err) {
-      sendStatus = 'error'
-    } finally {
-      isSending = false
-    }
-  }
+  $: emailHref = `mailto:danelmacujatungpalan@gmail.com?subject=Portfolio%20Inquiry&body=${encodeURIComponent(userMessage)}`
 
   let activeSection: SectionId = 'home'
   let theme: 'dark' | 'light' = 'dark'
-  let carouselElement: HTMLElement | null = null
-  let isCarouselVisible = true
 
   const syncTheme = (nextTheme: 'dark' | 'light') => {
     theme = nextTheme
@@ -241,23 +191,8 @@
       }
     })
 
-    // Pause carousel animation when offscreen to completely eliminate scroll lag
-    let carouselObserver: IntersectionObserver | null = null
-    if (carouselElement) {
-      carouselObserver = new IntersectionObserver(
-        ([entry]) => {
-          isCarouselVisible = entry.isIntersecting
-        },
-        { threshold: 0 }
-      )
-      carouselObserver.observe(carouselElement)
-    }
-
     return () => {
       observer.disconnect()
-      if (carouselObserver) {
-        carouselObserver.disconnect()
-      }
     }
   })
 </script>
@@ -284,9 +219,11 @@
 </svelte:head>
 
 <div class="relative overflow-x-clip">
+  <div class="background background-one"></div>
+  <div class="background background-two"></div>
   <div class="binary-rain" aria-hidden="true"></div>
 
-  <header class="site-header sticky top-0 z-[100] flex items-center justify-between gap-4 p-4 md:px-[clamp(1rem,3vw,2rem)] border-b border-border-weak bg-[var(--topbar-bg-solid)] max-[960px]:flex-col max-[960px]:items-start">
+  <header class="site-header sticky top-0 z-[100] flex items-center justify-between gap-4 p-4 md:px-[clamp(1rem,3vw,2rem)] border-b border-border-weak bg-topbar-bg backdrop-blur-[18px] max-[960px]:flex-col max-[960px]:items-start">
     <a class="font-sans text-[1.65rem] font-bold tracking-[0.04em] text-text-strong" href="#home">dnla.mac</a>
 
     <nav aria-label="Primary" class="flex flex-wrap justify-end gap-2 max-[960px]:w-full max-[960px]:justify-start">
@@ -307,14 +244,17 @@
     <div class="flex items-center gap-3">
       <button
         type="button"
-        class="inline-flex items-center justify-center w-11 h-11 border border-transparent rounded-full bg-chip text-muted cursor-pointer transition-all duration-[160ms] ease-out hover:-translate-y-[1px] hover:border-[rgba(126,231,255,0.28)] hover:text-text-strong hover:bg-chip-hover hover:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:-translate-y-[1px] focus-visible:border-[rgba(126,231,255,0.28)] focus-visible:text-text-strong focus-visible:bg-chip-hover focus-visible:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(126,231,255,0.75)] focus-visible:outline-offset-2"
+        class="inline-flex items-center gap-[0.6rem] py-[0.78rem] px-4 border border-transparent rounded-full bg-chip text-muted text-[0.95rem] cursor-pointer transition-all duration-[160ms] ease-out hover:-translate-y-[1px] hover:border-[rgba(126,231,255,0.28)] hover:text-text-strong hover:bg-chip-hover hover:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:-translate-y-[1px] focus-visible:border-[rgba(126,231,255,0.28)] focus-visible:text-text-strong focus-visible:bg-chip-hover focus-visible:shadow-[0_14px_30px_rgba(0,0,0,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(126,231,255,0.75)] focus-visible:outline-offset-2"
         on:click={toggleTheme}
         aria-pressed={theme === 'light'}
         aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
       >
-        <span class="material-symbols-outlined text-[1.25rem] text-accent" aria-hidden="true">
+        <span class="material-symbols-outlined text-[1.05rem] text-accent" aria-hidden="true">
           {theme === 'dark' ? 'dark_mode' : 'light_mode'}
         </span>
+        {#key theme}
+          <span>{theme === 'dark' ? 'Dark' : 'Light'}</span>
+        {/key}
       </button>
     </div>
   </header>
@@ -372,19 +312,12 @@
         </div>
       </div>
 
-      <div class="hero-carousel" bind:this={carouselElement}>
+      <div class="hero-carousel">
         <div class="grid gap-[0.55rem] mt-0">
-          <div class="relative overflow-hidden pb-[0.2rem]" aria-label="Tech stack carousel">
-            <!-- Smooth gradient edge fades avoiding costly CSS mask-image -->
-            <div class="pointer-events-none absolute left-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-r from-bg to-transparent" aria-hidden="true"></div>
-            <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-l from-bg to-transparent" aria-hidden="true"></div>
-
-            <ul
-              class="tech-carousel-track list-none p-0 m-0"
-              style:animation-play-state={isCarouselVisible ? 'running' : 'paused'}
-            >
+          <div class="overflow-hidden pb-[0.2rem] [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]" aria-label="Tech stack carousel">
+            <ul class="tech-carousel-track list-none p-0 m-0">
               {#each marqueeTechStacks as stack}
-                <li class="flex items-center gap-[0.9rem] p-4 rounded-2xl border border-border bg-surface min-w-[10.5rem] mr-3">
+                <li class="flex items-center gap-[0.9rem] p-4 rounded-2xl border border-border bg-surface min-w-[10.5rem]">
                   <i class={`inline-flex items-center justify-center w-[2.55rem] h-[2.55rem] flex-none text-[2.05rem] leading-none ${stack.icon}`} aria-hidden="true"></i>
                   <p class="m-0 text-text-strong text-base leading-[1.35] font-semibold">{stack.name}</p>
                 </li>
@@ -444,67 +377,25 @@
 
       <div class="grid gap-4 w-full">
         <!-- Email Card with Message Field -->
-        <form 
-          on:submit={handleSendMessage}
-          class="border border-border bg-surface shadow-custom flex flex-col gap-3 p-5 rounded-[1.4rem]"
-        >
+        <div class="border border-border bg-surface shadow-custom flex flex-col gap-4 p-5 rounded-[1.4rem]">
           <div class="flex items-center justify-between gap-4">
-            <span class="text-muted text-[0.85rem] tracking-[0.16em] uppercase">Send a Message</span>
+            <span class="text-muted text-[0.85rem] tracking-[0.16em] uppercase">Email</span>
             <strong class="m-0 text-right text-text-strong break-all max-sm:text-left text-sm font-semibold">danelmacujatungpalan@gmail.com</strong>
           </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              type="text"
-              bind:value={senderName}
-              placeholder="Your Name"
-              required
-              class="w-full p-3 rounded-xl border border-border/60 bg-bg text-text placeholder-muted focus:outline-none focus:border-accent text-sm font-sans"
-            />
-            <input
-              type="email"
-              bind:value={senderEmail}
-              placeholder="Your Email"
-              required
-              class="w-full p-3 rounded-xl border border-border/60 bg-bg text-text placeholder-muted focus:outline-none focus:border-accent text-sm font-sans"
-            />
-          </div>
-
+          
           <textarea
             bind:value={userMessage}
             placeholder="Type your message here..."
-            required
             class="w-full p-3 rounded-xl border border-border/60 bg-bg text-text placeholder-muted focus:outline-none focus:border-accent resize-none h-24 text-sm font-sans"
           ></textarea>
 
-          <div class="flex items-center justify-between gap-4 mt-1">
-            <div class="text-xs font-medium">
-              {#if sendStatus === 'success'}
-                <span class="text-green-500 flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[1rem]">check_circle</span>
-                  Message sent! I'll get back to you soon.
-                </span>
-              {:else if sendStatus === 'error'}
-                <span class="text-red-500 flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[1rem]">error</span>
-                  Failed to send. Please try again.
-                </span>
-              {/if}
-            </div>
-
-            <button 
-              type="submit"
-              disabled={!isFormValid || isSending}
-              class={`inline-flex items-center justify-center py-2 px-6 rounded-full font-semibold text-sm transition-all duration-[160ms] ${
-                isFormValid && !isSending
-                  ? 'bg-accent hover:bg-accent-2 !text-white cursor-pointer shadow-[0_4px_16px_rgba(255,48,48,0.35)] hover:-translate-y-[1px]'
-                  : 'bg-chip text-muted border border-border/40 cursor-not-allowed opacity-50'
-              }`}
-            >
-              <span>{isSending ? 'Sending...' : 'Send Message'}</span>
-            </button>
-          </div>
-        </form>
+          <a 
+            href={emailHref}
+            class="inline-flex items-center justify-center py-2 px-6 rounded-full bg-accent hover:bg-accent-2 text-text-strong font-semibold text-sm transition-all duration-[160ms] self-end cursor-pointer"
+          >
+            <span>Send Email</span>
+          </a>
+        </div>
 
         <!-- Phone Card with Copy Feature -->
         <button 
