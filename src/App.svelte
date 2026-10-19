@@ -248,7 +248,6 @@
   const syncTheme = (nextTheme: 'dark' | 'light') => {
     theme = nextTheme
     document.documentElement.dataset.theme = nextTheme
-    localStorage.setItem('portfolio-theme', nextTheme)
   }
 
   const toggleTheme = () => {
@@ -269,10 +268,7 @@
     })
     headerObserver.observe(headerElement)
 
-    const savedTheme = localStorage.getItem('portfolio-theme') as 'dark' | 'light' | null
-    if (savedTheme) {
-      syncTheme(savedTheme)
-    }
+    syncTheme('dark')
 
     const sectionEntries = new Map<string, IntersectionObserverEntry>()
 
